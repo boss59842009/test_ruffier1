@@ -7,6 +7,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.core.window import Window
 
 from instructions import *
+from timer import Timer
 
 lbl_color = (1, .97, .38, 1)
 btn_color = (.45, .32, .9, 1)
@@ -66,7 +67,6 @@ class MainScreen(Screen):
         global name, age
         name = self.name_input.text
         age = check_int(self.age_input.text)
-        print(name)
         if age is False or age < 7 or name == '':
             self.age_input.text = '7'
             self.name_input.text = "Микола"
@@ -77,14 +77,15 @@ class MainScreen(Screen):
 class SecondScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.next_screen = True
+        self.next_screen = False
 
-        inst_lbl = Label(text=txt_test1, color=lbl_color, bold=True, halign='center', font_size=35)
+        inst_lbl = Label(text=txt_test1, color=lbl_color, bold=True, halign='center', font_size=35, size_hint=(1, .5))
 
-        lbl_time = Label(text='Пройшло секунд: 0', bold=True, font_size=35)
+        self.lbl_time = Timer(txt='Пройшло секунд: ', total=15,  bold=True, font_size=35, size_hint=(1, .5))
+        self.lbl_time.bind(done=self.end_timer)
         lbl_result = Label(text='Введіть результат', color=lbl_color, bold=True, font_size=35)
         self.result_input = TextInput(text='1', multiline=False)
-        # self.result_input.set_disabled(True)
+        self.result_input.set_disabled(True)
         self.btn = Button(
             text='Почати',
             bold=True,
@@ -101,15 +102,22 @@ class SecondScreen(Screen):
 
         main_line = BoxLayout(orientation='vertical', padding=15, spacing=20)
         main_line.add_widget(inst_lbl)
-        main_line.add_widget(lbl_time)
+        main_line.add_widget(self.lbl_time)
         main_line.add_widget(line1)
         main_line.add_widget(self.btn)
 
         self.add_widget(main_line)
 
+    def end_timer(self, *args):
+        self.result_input.set_disabled(False)
+        self.next_screen = True
+        self.btn.text = 'Продовжити'
+
+
     def next(self):
+        global p1
         if self.next_screen is False:
-            pass
+            self.lbl_time.start()
         else:
             p1 = check_int(self.result_input.text)
             if p1 is False or p1 <= 1:
@@ -118,13 +126,91 @@ class SecondScreen(Screen):
                 self.manager.current = 'third'
 
 
-
 class ThirdScreen(Screen):
-    pass
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        instr = Label(text=txt_test2, color=lbl_color, bold=True, halign='center', size_hint=(1, .5))
+
+        self.sits = Label(text='Залишилось присідань: 30', bold=True, size_hint=(1, .2))
+        self.seconds = Label(text='Залишилось секунд: 45', bold=True, size_hint=(1, .2))
+        self.btn = Button(
+            text='Почати',
+            bold=True,
+            font_size=50,
+            background_color=btn_color,
+            size_hint=(.4, .2),
+            pos_hint={'center_x': .5}
+        )
+        self.btn.on_press = self.next
+
+        main_line = BoxLayout(orientation='vertical', padding=10)
+        main_line.add_widget(instr)
+        main_line.add_widget(self.sits)
+        main_line.add_widget(self.seconds)
+        main_line.add_widget(self.btn)
+
+        self.add_widget(main_line)
+
+    def next(self):
+        self.manager.current = 'fourth'
 
 
 class FourthScreen(Screen):
-    pass
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.next_screen = True
+
+        inst_lbl = Label(text=txt_test3, color=lbl_color, bold=True, halign='center', size_hint=(1, .2))
+        pulse = Label(text='Рахуйте пульс!', bold=True, size_hint=(1, .2))
+        seconds = Label(text='Залишилось секунд: 45', bold=True, size_hint=(1, .2))
+
+        result1_lbl = Label(text="Результат", color=lbl_color, bold=True, font_size=35)
+        self.result1_input = TextInput(text='1', multiline=False)
+        result2_lbl = Label(text="Результат після відпочинку", color=lbl_color, bold=True, font_size=35)
+        self.result2_input = TextInput(text='1', multiline=False)
+
+        self.btn = Button(
+            text='Почати',
+            bold=True,
+            font_size=50,
+            background_color=btn_color,
+            size_hint=(.4, .2),
+            pos_hint={'center_x': .5}
+        )
+        self.btn.on_press = self.next
+
+        line1 = BoxLayout(size_hint=(.8, None), height='30sp')
+        line2 = BoxLayout(size_hint=(.8, None), height='30sp')
+
+        line1.add_widget(result1_lbl)
+        line1.add_widget(self.result1_input)
+
+        line2.add_widget(result2_lbl)
+        line2.add_widget(self.result2_input)
+
+        main_line = BoxLayout(orientation='vertical', padding=15, spacing=20)
+        main_line.add_widget(inst_lbl)
+        main_line.add_widget(pulse)
+        main_line.add_widget(seconds)
+        main_line.add_widget(line1)
+        main_line.add_widget(line2)
+        main_line.add_widget(self.btn)
+
+        self.add_widget(main_line)
+
+    def next(self):
+        global p2, p3
+        if self.next_screen is False:
+            pass
+        else:
+            p2 = check_int(self.result1_input.text)
+            p3 = check_int(self.result2_input.text)
+            if p2 is False or p2 <= 1:
+                self.result1_input.text = '1'
+            elif p3 is False or p3 <= 1:
+                self.result2_input.text = '1'
+            else:
+                self.manager.current = 'result'
 
 
 class ResultScreen(Screen):
