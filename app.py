@@ -113,7 +113,6 @@ class SecondScreen(Screen):
         self.next_screen = True
         self.btn.text = 'Продовжити'
 
-
     def next(self):
         global p1
         if self.next_screen is False:
